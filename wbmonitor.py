@@ -15,11 +15,10 @@ class WBMonitor():
             'Referer': 'https://passport.weibo.cn/signin/login',
             'Connection': 'close',
             'Accept-Language': 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3',
-            'Cookie': 'XSRF-TOKEN=4564c6;SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhhhBjMlgDHkZmpZ4QBjQzy5NHD95QNSKz71hM41KzRWs4Dqc_Ii--fi-2fi-i2i--fi-82i-2ci--NiK.XiKLsi--ci-z7i-zRi--Ri-isiKLhi--4iK.4i-8Wi--Xi-i2i-27i--fiKLhi-2Ri--Ri-zNi-8si--Xi-zRiKyW;MLOGIN=1;SUB=_2A25Hp_cbDeRhGeFL6VIZ9yfFyTSIHXVk3XbTrDV6PUJbktAbLWn4kW1NQkPtIFgE8EwWlpcFan4J6P4N4D_EudIq;ALF=1791693899;_T_WM=57525525339;M_WEIBOCN_PARAMS=uicode%3D20000174;SCF=Al_988sGYuw2b4CRhQHGKZXrEe99igeVFxITAV8Eso7mVXt-Fb7nNB7e370BAEUiMGIJ4V4noTy8BOV1EhM_u6A.;SSOLoginState=1789101899;WEIBOCN_FROM=1110006030'
+            'Cookie': os.environ.get('WEIBO_COOKIE', '')  # 👈 改为从环境变量读取
         }
-        # 这里添加关注人的uid
         self.uid = ['1002568141', '7996057394'] 
-        self.dic = '/tmp/wbIds.txt'
+        self.dic = 'wbIds.txt'  # 👈 改回普通文件名，GitHub Actions 会把它缓存起来
 
     # 获取访问连接
     def getWBInfo(self):
