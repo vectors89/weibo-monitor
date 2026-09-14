@@ -1,0 +1,42 @@
+name: 微博监控
+
+on:
+  schedule:
+    # 每5分钟运行一次（北京时间 8点到次日凌晨2点）
+    - cron: '*/5 0-2,7-23 * * *'
+  workflow_dispatch: # 允许手动点击运行测试
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 恢复历史记录
+        uses: actions/cache@v4
+        with:
+          path: wbIds.txt
+          key: wbids-cache-${{ github.run_id }}
+          restore-keys: |
+            wbids-cache-
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 运行监控
+        env:
+          WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
+          WXPUSHER_UID: ${{ secrets.WXPUSHER_UID }}
+          WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
+        run: python start.py
+
+      - name: 保存历史记录
+        uses: actions/cache@v4
+        with:
+          path: wbIds.txt
+          key: wbids-cache-${{ github.run_id }}
