@@ -40,12 +40,10 @@ jobs:
           WXPUSHER_UID: ${{ secrets.WXPUSHER_UID }}
           WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
         run: |
-          echo "=========== 开始体检 ==========="
-          python -c "import os; print('1. Token读取:', '成功' if os.environ.get('WXPUSHER_APP_TOKEN') else '失败(为空)')"
-          python -c "import os; print('2. UID读取:', '成功' if os.environ.get('WXPUSHER_UID') else '失败(为空)')"
-          python -c "import os; print('3. Cookie读取:', '成功' if os.environ.get('WEIBO_COOKIE') else '失败(为空)')"
-          echo "=========== 开始执行 ==========="
-          python start.py
+          echo "### 运行日志" >> $GITHUB_STEP_SUMMARY
+          python start.py > run_log.txt 2>&1
+          cat run_log.txt
+          cat run_log.txt >> $GITHUB_STEP_SUMMARY
 
       # 5. 保存最新的历史记录
       - name: 保存历史记录
