@@ -5,7 +5,10 @@
 # Desc      : 微博主模块
 # 添加新uid时，自行清空上一层里的微博id列表
 
-import requests,json,sys
+import requests
+import json
+import sys
+import os  # 👈 必须加上这个！否则找不到环境变量
 
 class WBMonitor():
     def __init__(self):
@@ -15,10 +18,10 @@ class WBMonitor():
             'Referer': 'https://passport.weibo.cn/signin/login',
             'Connection': 'close',
             'Accept-Language': 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3',
-            'Cookie': os.environ.get('WEIBO_COOKIE', '')  # 👈 改为从环境变量读取
+            'Cookie': os.environ.get('WEIBO_COOKIE', '')  # 从环境变量读取
         }
         self.uid = ['1002568141', '7996057394'] 
-        self.dic = 'wbIds.txt'  # 👈 改回普通文件名，GitHub Actions 会把它缓存起来
+        self.dic = 'wbIds.txt'  # GitHub Actions 会把它缓存起来
 
     # 获取访问连接
     def getWBInfo(self):
@@ -32,7 +35,7 @@ class WBMonitor():
                 if 'data' not in data or 'tabsInfo' not in data['data']:
                     print("⚠️ 微博没有返回预期数据，实际返回内容如下：")
                     print(res.text)
-                    continue # 跳过当前uid，继续下一个
+                    continue 
                 
                 for j in data['data']['tabsInfo']['tabs']:
                     if j['tab_type'] == 'weibo':
@@ -78,22 +81,21 @@ class WBMonitor():
                                 f.write(j['mblog']['id'] + '\n')
                             self.echoMsg('Info', '发微博啦!!!')
                             self.echoMsg('Info', '目前有 %s 条微博' % (len(itemIds) + 1))
-                            returnDict['id'] = j['mblog']['id']  # 新增：用于拼接原微博链接
+                            
+                            returnDict['id'] = j['mblog']['id']
                             returnDict['created_at'] = j['mblog']['created_at']
                             returnDict['text'] = j['mblog']['text']
                             returnDict['source'] = j['mblog']['source']
                             returnDict['nickName'] = j['mblog']['user']['screen_name']
                             
-                            # 新增：提取图片链接
-                                                      # 提取图片（增强兼容性）
+                            # 提取图片
                             returnDict['pics'] = []
                             if 'pics' in j['mblog']:
                                 for pic in j['mblog']['pics']:
-                                    # 优先取大图，没有大图就取原图
                                     img_url = pic.get('large', {}).get('url') or pic.get('url')
                                     if img_url:
                                         returnDict['pics'].append(img_url)
-                                    
+                                        
                             return returnDict
             except Exception as e:
                 print(f"❌ 处理微博 {i} 时出错: {e}")
