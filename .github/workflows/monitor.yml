@@ -39,7 +39,13 @@ jobs:
           WXPUSHER_APP_TOKEN: ${{ secrets.WXPUSHER_APP_TOKEN }}
           WXPUSHER_UID: ${{ secrets.WXPUSHER_UID }}
           WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
-        run: python start.py
+        run: |
+          echo "=========== 开始体检 ==========="
+          python -c "import os; print('1. Token读取:', '成功' if os.environ.get('WXPUSHER_APP_TOKEN') else '失败(为空)')"
+          python -c "import os; print('2. UID读取:', '成功' if os.environ.get('WXPUSHER_UID') else '失败(为空)')"
+          python -c "import os; print('3. Cookie读取:', '成功' if os.environ.get('WEIBO_COOKIE') else '失败(为空)')"
+          echo "=========== 开始执行 ==========="
+          python start.py
 
       # 5. 保存最新的历史记录
       - name: 保存历史记录
