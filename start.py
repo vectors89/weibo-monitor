@@ -1,24 +1,37 @@
 import os
 import requests
 
-print("===== 开始自我体检 =====")
-print("1. 正在检查 Token 状态...")
+# 这是一个极简的强制推送函数
+def force_notify(token, uid, message):
+    url = 'https://wxpusher.zjiecode.com/api/send/message'
+    datas = {
+        "appToken": token,
+        "content": message,
+        "summary": "GitHub Actions 体检报告",
+        "contentType": 1,
+        "uids": [uid]
+    }
+    try:
+        res = requests.post(url, json=datas, timeout=10).json()
+        print("发送请求返回:", res)
+    except Exception as e:
+        print("发送请求失败:", e)
+
+# 开始体检
+print("===== 开始体检 =====")
+
+# 1. 读取 Secrets
 token = os.environ.get('WXPUSHER_APP_TOKEN', '')
-print("Token 是否获取成功:", "成功" if token else "失败 (为空)")
-
-print("2. 正在检查 UID 状态...")
 uid = os.environ.get('WXPUSHER_UID', '')
-print("UID 是否获取成功:", "成功" if uid else "失败 (为空)")
+cookie = os.environ.get('WEIBO_COOKIE', '')
 
-print("3. 正在尝试发送 WxPusher...")
-url = 'https://wxpusher.zjiecode.com/api/send/message'
-datas = {
-    "appToken": token,
-    "content": "来自 GitHub Actions 的强制测试消息",
-    "summary": "测试推送",
-    "contentType": 1,
-    "uids": [uid]
-}
-res = requests.post(url, json=datas).json()
-print("WxPusher 返回结果:", res)
+# 2. 检查是否有值
+print("Token长度:", len(token))
+print("UID长度:", len(uid))
+print("Cookie长度:", len(cookie))
+
+# 3. 强行给微信发一条通知，无论有没有错误
+msg = f"体检结果:\nToken长度={len(token)}\nUID长度={len(uid)}\nCookie长度={len(cookie)}"
+force_notify(token, uid, msg)
+
 print("===== 体检结束 =====")
