@@ -10,11 +10,11 @@ jobs:
   monitor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # 1. 恢复历史记录（wbIds.txt），防止每次重复推送老微博
       - name: 恢复历史记录
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: wbIds.txt
           key: wbids-cache-${{ github.run_id }}
@@ -23,7 +23,7 @@ jobs:
 
       # 2. 安装 Python 环境
       - name: 设置 Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -43,7 +43,7 @@ jobs:
 
       # 5. 保存最新的历史记录
       - name: 保存历史记录
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: wbIds.txt
           key: wbids-cache-${{ github.run_id }}
