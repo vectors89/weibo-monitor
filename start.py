@@ -23,13 +23,13 @@ headers = {
 def notify_user(contents, summarys):
 	url = 'http://wxpusher.zjiecode.com/api/send/message'
 	datas = {
-		"appToken": "AT_9PX2FAMxGXmfnskOwUyaMv8owQXbbgVv",
+		"appToken": os.environ.get('WXPUSHER_APP_TOKEN', ''), # 👈 从环境变量读取
 		"content": contents,
 		"summary": summarys,
 		"contentType": 3, 
 		"topicIds": [],
 		"uids": [
-			"UID_CH67O0yzURzJQOGT92pcsbBYPqIb"
+			os.environ.get('WXPUSHER_UID', '') # 👈 从环境变量读取
 		],
 		"url": ""
 	}
