@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Action    : 微博
+# Desc      : 微博主模块
 
 import requests
 import json
@@ -21,22 +23,28 @@ class WBMonitor():
         # =============================================
         self.dic = 'wbIds.txt'
 
+    # 获取访问连接
     def getWBInfo(self):
         self.weiboInfo = []
         for i in self.uid:
             userInfo = 'https://m.weibo.cn/api/container/getIndex?type=uid&value=%s' % (i)
             res = requests.get(userInfo, headers=self.reqHeaders)
+
             try:
                 data = res.json()
                 if 'data' not in data or 'tabsInfo' not in data['data']:
-                    print("微博没有返回预期数据:", res.text)
+                    print("⚠️ 微博没有返回预期数据，实际返回内容如下：")
+                    print(res.text)
                     continue
+                
                 for j in data['data']['tabsInfo']['tabs']:
                     if j['tab_type'] == 'weibo':
                         self.weiboInfo.append('https://m.weibo.cn/api/container/getIndex?type=uid&value=%s&containerid=%s' % (i, j['containerid']))
             except Exception as e:
-                print("解析出错:", e)
+                print("❌ 解析出错:", e)
+                print(res.text)
 
+    # 收集已经发布动态的id
     def getWBQueue(self):
         self.itemIds = []
         for i in self.weiboInfo:
@@ -46,9 +54,12 @@ class WBMonitor():
                     if j['card_type'] == 9:
                         f.write(j['mblog']['id'] + '\n')
                         self.itemIds.append(j['mblog']['id'])
+        self.echoMsg('Info', '微博数目获取成功')
+        self.echoMsg('Info', '目前有 %s 条微博' % len(self.itemIds))
 
+    # 开始监控（收集所有新微博，返回列表）
     def startmonitor(self):
-        returnDict = {}
+        new_items = []  # 👈 改为收集列表
         itemIds = []
         if os.path.exists(self.dic):
             with open(self.dic, 'r') as f:
@@ -61,7 +72,7 @@ class WBMonitor():
                 res = requests.get(i, headers=self.reqHeaders)
                 data = res.json()
                 if 'data' not in data or 'cards' not in data['data']:
-                    print(f"获取微博内容失败，UID: {i}")
+                    print(f"⚠️ 获取微博内容失败，UID: {i}")
                     continue
                 
                 for j in data['data']['cards']:
@@ -70,16 +81,26 @@ class WBMonitor():
                             with open(self.dic, 'a') as f:
                                 f.write(j['mblog']['id'] + '\n')
                             
+                            returnDict = {}
                             returnDict['id'] = j['mblog']['id']
                             returnDict['text'] = j['mblog']['text']
                             returnDict['nickName'] = j['mblog']['user']['screen_name']
-                            
                             returnDict['pics'] = []
                             if 'pics' in j['mblog']:
                                 for pic in j['mblog']['pics']:
                                     img_url = pic.get('large', {}).get('url') or pic.get('url')
                                     if img_url:
                                         returnDict['pics'].append(img_url)
-                            return returnDict
+                            
+                            new_items.append(returnDict)  # 👈 收集而不是直接返回
             except Exception as e:
-                print(f"处理微博 {i} 时出错: {e}")
+                print(f"❌ 处理微博 {i} 时出错: {e}")
+                
+        return new_items  # 👈 返回列表
+
+    # 格式化输出
+    def echoMsg(self, level, msg):
+        if level == 'Info':
+            print('[Info] %s' % msg)
+        elif level == 'Error':
+            print('[Error] %s' % msg)
