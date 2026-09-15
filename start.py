@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Action    : 监控
+# Desc      : 启动模块（仅微博版）
 
 import wbmonitor
 import requests
 import ssl
 import os
+import time  # 👈 必须加上这个，用于间隔推送
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -17,6 +20,7 @@ headers = {
 	'Content-Type': 'application/json'
 }
 
+# 调用的wxpusher平台
 def notify_user(contents, summarys):
 	url = 'https://wxpusher.zjiecode.com/api/send/message'
 	datas = {
@@ -65,10 +69,13 @@ def main():
                 if f.read().strip() == '':
                     w.getWBQueue()
                     
-        newWB = w.startmonitor()
-        if newWB is not None:
-            print('抓到新微博，准备推送...')
-            wbweixin(newWB)
+        newWBs = w.startmonitor()  # 👈 接收列表
+        if newWBs:
+            print(f'抓到 {len(newWBs)} 条新微博，准备推送...')
+            for item in newWBs:  # 👈 遍历每一条微博
+                wbweixin(item)
+                time.sleep(2)  # 👈 关键：暂停2秒，防止WxPusher接口拦截
+            print('推送完成')
         else:
             print('没有发现新微博')
     except Exception as e:
